@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/burritoPlacesList">
+
+    <fragment
+        android:id="@+id/burritoPlacesList"
+        android:name="com.example.findburrito.BurritoPlacesList"
+        android:label="fragment_burrito_places_list"
+        tools:layout="@layout/fragment_burrito_places_list" >
+        <action
+            android:id="@+id/action_burritoPlacesList_to_burritoPlaceDetailsFragment"
+            app:destination="@id/burritoPlaceDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/burritoPlaceDetailsFragment"
+        android:name="com.example.findburrito.BurritoPlaceDetailsFragment"
+        android:label="fragment_burrito_place_details"
+        tools:layout="@layout/fragment_burrito_place_details" />
+</navigation>
