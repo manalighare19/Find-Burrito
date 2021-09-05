@@ -8,11 +8,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.apollographql.apollo.coroutines.await
+import com.example.findburrito.databinding.FragmentBurritoPlacesListBinding
 import com.example.yelp.BurritoPlacesListQuery
 
 
 class BurritoPlacesList : Fragment() {
+
+    private lateinit var binding: FragmentBurritoPlacesListBinding
+    private  val burritoPlacesAdapter = BurritoPlacesListAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,15 +26,21 @@ class BurritoPlacesList : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         (activity as? AppCompatActivity)?.supportActionBar?.title = "Burrito Places"
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_burrito_places_list, container, false)
+        binding = setBinding(inflater, container)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.placesRecycler.apply {
+            adapter = burritoPlacesAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
 
         lifecycleScope.launchWhenResumed {
             val response = apolloClient.query(BurritoPlacesListQuery()).await()
@@ -37,5 +48,11 @@ class BurritoPlacesList : Fragment() {
             Log.d("Places List", "Success: ${response.data}")
         }
     }
+
+    private fun setBinding(
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ): FragmentBurritoPlacesListBinding =
+        FragmentBurritoPlacesListBinding.inflate(inflater, container, false)
 
 }
