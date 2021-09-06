@@ -3,7 +3,6 @@ query BurritoPlacesList{
     business {
       id
       name
-      phone
       price
       display_phone
       location {

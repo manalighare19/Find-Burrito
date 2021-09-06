@@ -29,8 +29,9 @@ class BurritoPlacesList : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
+        (activity as AppCompatActivity?)?.supportActionBar?.setDisplayHomeAsUpEnabled(false)
         (activity as? AppCompatActivity)?.supportActionBar?.title = "Burrito Places"
+
         // Inflate the layout for this fragment
         binding = setBinding(inflater, container)
         return binding.root
