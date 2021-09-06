@@ -17,6 +17,7 @@ android {
         applicationId "com.example.findburrito"
         minSdkVersion 16
         targetSdkVersion 30
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
 
@@ -62,6 +63,8 @@ dependencies {
     // Google Play Services dependency
     implementation 'com.google.android.gms:play-services-maps:17.0.1'
     implementation 'com.google.android.gms:play-services-location:18.0.0'
+
+    implementation("com.android.support:multidex:1.0.3")
 }
 
 apollo {
