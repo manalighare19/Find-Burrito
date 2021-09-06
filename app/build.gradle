@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id("com.apollographql.apollo").version("2.5.5")
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
@@ -57,8 +58,20 @@ dependencies {
     //apollo-runtime and apollo-coroutines-support dependencies
     implementation 'com.apollographql.apollo:apollo-runtime:2.5.5'
     implementation 'com.apollographql.apollo:apollo-coroutines-support:2.5.5'
+
+    // Google Play Services dependency
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
 }
 
 apollo {
     generateKotlinModels.set(true)
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += 'build/generated/source/navigation-args'
+        }
+    }
 }
