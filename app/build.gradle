@@ -5,6 +5,10 @@ plugins {
     id 'androidx.navigation.safeargs.kotlin'
 }
 
+def apiKeyPropertiesFile = rootProject.file("secrets.properties")
+def apikeyProperties = new Properties()
+apikeyProperties.load(new FileInputStream(apiKeyPropertiesFile))
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -22,6 +26,14 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        def addConstant = {constantName, constantValue ->
+            manifestPlaceholders += [ (constantName):constantValue]
+            buildConfigField "String", "${constantName}", "${constantValue}"
+        }
+
+        addConstant("GOOGLE_MAPS_KEY", apikeyProperties["GOOGLE_MAPS_KEY"])
+        addConstant("YELP_API_KEY", apikeyProperties["YELP_API_KEY"])
     }
 
     buildTypes {

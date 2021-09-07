@@ -19,12 +19,15 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 
 class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var binding: FragmentBurritoPlaceDetailsBinding
-    private lateinit var map: GoogleMap
+
+    var lat: Double = 0.0
+    var long: Double = 0.0
 
     private val args: BurritoPlaceDetailsFragmentArgs by navArgs()
 
@@ -50,8 +53,6 @@ class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
         (activity as AppCompatActivity?)?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding = FragmentBurritoPlaceDetailsBinding.inflate(inflater, container, false)
 
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
 
 
         return binding.root
@@ -60,7 +61,7 @@ class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val placeBusinessId = args.placeId!!
+         val placeBusinessId = args.placeId!!
 
         lifecycleScope.launchWhenResumed {
             val response = apolloClient.query(BurritoPlaceDetailsQuery(placeBusinessId)).await()
@@ -73,29 +74,29 @@ class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
                 binding.placePrice.text = burritoPlaceDetails.price
                 binding.placePhone.text =
                     getString(R.string.bullet_format, burritoPlaceDetails.display_phone)
-                showPointerOnMap(burritoPlaceDetails.coordinates?.latitude, burritoPlaceDetails.coordinates?.longitude)
+                lat = burritoPlaceDetails.coordinates?.latitude!!
+                long = burritoPlaceDetails.coordinates.longitude!!
             }
             (activity as? AppCompatActivity)?.supportActionBar?.title = burritoPlaceDetails?.name
         }
     }
 
-    private fun showPointerOnMap(latitude: Double?, longitude: Double?) {
-            val mLatitude = latitude
-            val mlLongitude = longitude
-
-
-    }
+//    fun showMarker(){
+//        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+//        mapFragment.getMapAsync( onMapReadyCallback(){
+//
+//        })
+//    }
 
     override fun onMapReady(googleMap: GoogleMap) {
-
-        // map = googleMap
-        val home = LatLng(40.7226553, -74.0361504)
+        val place = LatLng(40.726542, -74.048619)
         googleMap.addMarker(
             MarkerOptions()
-                .position(home)
+                .position(place)
                 .title("Home")
         )
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(home))
+
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(place))
 
     }
 }
