@@ -8,11 +8,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.apollographql.apollo.coroutines.await
+import com.apollographql.apollo.exception.ApolloException
+import com.example.findburrito.databinding.FragmentBurritoPlacesListBinding
 import com.example.yelp.BurritoPlacesListQuery
 
 
 class BurritoPlacesList : Fragment() {
+
+    private lateinit var binding: FragmentBurritoPlacesListBinding
+    private val burritoPlacesAdapter = BurritoPlacesListAdapter{burritoPlaceDetails: BurritoPlacesListQuery.Business -> openDetailedView(burritoPlaceDetails)  }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,21 +28,49 @@ class BurritoPlacesList : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-
+    ): View {
+        (activity as AppCompatActivity?)?.supportActionBar?.setDisplayHomeAsUpEnabled(false)
         (activity as? AppCompatActivity)?.supportActionBar?.title = "Burrito Places"
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_burrito_places_list, container, false)
+        binding = setBinding(inflater, container)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         lifecycleScope.launchWhenResumed {
-            val response = apolloClient.query(BurritoPlacesListQuery()).await()
+            val response = try {
+                apolloClient.query(BurritoPlacesListQuery()).await()
+            } catch (e: ApolloException) {
+                Log.d("Places List", "Failure", e)
+                null
+            }
 
-            Log.d("Places List", "Success: ${response.data}")
+            val burritoPlaces = response?.data?.search?.business?.filterNotNull()
+            if (burritoPlaces != null && !response.hasErrors()) {
+                burritoPlacesAdapter.setPlaces(burritoPlaces)
+            }
+        }
+
+        binding.placesRecycler.apply {
+            adapter = burritoPlacesAdapter
+            layoutManager = LinearLayoutManager(context)
         }
     }
 
+    private fun setBinding(
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ): FragmentBurritoPlacesListBinding =
+        FragmentBurritoPlacesListBinding.inflate(inflater, container, false)
+
+    private fun openDetailedView(burritoPlaceDetails: BurritoPlacesListQuery.Business) {
+        findNavController().navigate(
+            BurritoPlacesListDirections.actionBurritoPlacesListToBurritoPlaceDetailsFragment(
+                placeId = burritoPlaceDetails.id
+            )
+        )
+    }
 }

@@ -1,12 +1,12 @@
 query BurritoPlacesList{
   search(term: "burrito", latitude: 40.7226553, longitude: -74.0361504, radius: 19312) {
     business {
+      id
       name
-      phone
       price
       display_phone
       location {
-        address1
+        formatted_address
       }
     }
   }

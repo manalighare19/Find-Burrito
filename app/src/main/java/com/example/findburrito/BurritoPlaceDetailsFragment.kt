@@ -1,59 +1,101 @@
 package com.example.findburrito
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
+import com.apollographql.apollo.coroutines.await
+import com.example.findburrito.databinding.FragmentBurritoPlaceDetailsBinding
+import com.example.yelp.BurritoPlaceDetailsQuery
+import com.example.yelp.BurritoPlacesListQuery
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [BurritoPlaceDetailsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class BurritoPlaceDetailsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var binding: FragmentBurritoPlaceDetailsBinding
+    private lateinit var map: GoogleMap
+
+    private val args: BurritoPlaceDetailsFragmentArgs by navArgs()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                activity?.onBackPressed()
+                return true
+            }
         }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_burrito_place_details, container, false)
+    ): View {
+        (activity as AppCompatActivity?)?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding = FragmentBurritoPlaceDetailsBinding.inflate(inflater, container, false)
+
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
+
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment BurritoPlaceDetailsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            BurritoPlaceDetailsFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val placeBusinessId = args.placeId!!
+
+        lifecycleScope.launchWhenResumed {
+            val response = apolloClient.query(BurritoPlaceDetailsQuery(placeBusinessId)).await()
+
+//            Log.d("Info is", "Success {$response.data}")
+            val burritoPlaceDetails = response.data?.business
+
+            if (burritoPlaceDetails != null && !response.hasErrors()) {
+                binding.placeAddress.text = burritoPlaceDetails.location?.formatted_address
+                binding.placePrice.text = burritoPlaceDetails.price
+                binding.placePhone.text =
+                    getString(R.string.bullet_format, burritoPlaceDetails.display_phone)
+                showPointerOnMap(burritoPlaceDetails.coordinates?.latitude, burritoPlaceDetails.coordinates?.longitude)
             }
+            (activity as? AppCompatActivity)?.supportActionBar?.title = burritoPlaceDetails?.name
+        }
+    }
+
+    private fun showPointerOnMap(latitude: Double?, longitude: Double?) {
+            val mLatitude = latitude
+            val mlLongitude = longitude
+
+
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+
+        // map = googleMap
+        val home = LatLng(40.7226553, -74.0361504)
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(home)
+                .title("Home")
+        )
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(home))
+
     }
 }

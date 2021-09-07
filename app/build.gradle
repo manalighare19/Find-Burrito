@@ -2,16 +2,22 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id("com.apollographql.apollo").version("2.5.5")
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
+    buildFeatures {
+        viewBinding true
+    }
+
     defaultConfig {
         applicationId "com.example.findburrito"
         minSdkVersion 16
         targetSdkVersion 30
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
 
@@ -53,8 +59,22 @@ dependencies {
     //apollo-runtime and apollo-coroutines-support dependencies
     implementation 'com.apollographql.apollo:apollo-runtime:2.5.5'
     implementation 'com.apollographql.apollo:apollo-coroutines-support:2.5.5'
+
+    // Google Play Services dependency
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
+
+    implementation("com.android.support:multidex:1.0.3")
 }
 
 apollo {
     generateKotlinModels.set(true)
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += 'build/generated/source/navigation-args'
+        }
+    }
 }

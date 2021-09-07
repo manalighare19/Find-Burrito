@@ -1,0 +1,15 @@
+query BurritoPlaceDetails($businessID: String!){
+    business (id: $businessID ){
+      id
+      name
+      price
+      display_phone
+      location {
+        formatted_address
+      }
+      coordinates{
+        latitude
+        longitude
+      }
+    }
+  }
