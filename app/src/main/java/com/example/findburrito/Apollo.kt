@@ -23,7 +23,7 @@ private class AuthorizationInterceptor : Interceptor {
         val request = chain.request().newBuilder()
             .addHeader(
                 "Authorization",
-                "Bearer $YELP_API_KEY"
+                "Bearer "
             )
             .build()
 
