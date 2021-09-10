@@ -1,16 +1,11 @@
 package com.example.findburrito
 
-import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationManager
-import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -18,13 +13,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -70,7 +62,7 @@ class BurritoPlacesList : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        requestPermission()
+
     }
 
     override fun onCreateView(
@@ -80,6 +72,7 @@ class BurritoPlacesList : Fragment() {
         (activity as AppCompatActivity?)?.supportActionBar?.setDisplayHomeAsUpEnabled(false)
         (activity as? AppCompatActivity)?.supportActionBar?.title = "Burrito Places"
 
+        requestPermission()
 
         binding = FragmentBurritoPlacesListBinding.inflate(inflater, container, false)
         return binding.root
@@ -145,6 +138,7 @@ class BurritoPlacesList : Fragment() {
                             Log.d("Places List", "Failure", e)
                             null
                         }
+                        Log.d("Place List", "Success ${response?.data}")
 
                         val burritoPlaces = response?.data?.search?.business?.filterNotNull()
                         if (burritoPlaces != null && !response.hasErrors()) {
