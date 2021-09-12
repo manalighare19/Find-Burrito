@@ -1,10 +1,10 @@
 package com.example.findburrito
 
 import com.apollographql.apollo.ApolloClient
+import com.example.findburrito.BuildConfig.YELP_API_KEY
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
-
 
 
 val okHttpClient = OkHttpClient.Builder()
@@ -17,12 +17,11 @@ val apolloClient = ApolloClient.builder()
     .build()
 
 private class AuthorizationInterceptor : Interceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request().newBuilder()
             .addHeader(
                 "Authorization",
-                "Bearer "
+                "Bearer $YELP_API_KEY"
             )
             .build()
 

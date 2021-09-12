@@ -3,9 +3,16 @@ package com.example.findburrito
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkInfo
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -13,10 +20,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,10 +46,10 @@ class BurritoPlacesList : Fragment() {
         ) { isGranted: Boolean ->
             if (isGranted) {
                 getCurrentLocation()
-                Log.d("Permission", "onActivityCreated: Granted")
+//                Log.d("Permission", "onActivityCreated: Granted")
             } else {
                 showLocationPermissionsDialog()
-                Log.d("Permission", "onActivityCreated: Denied")
+//                Log.d("Permission", "onActivityCreated: Denied")
             }
         }
 
@@ -62,6 +71,12 @@ class BurritoPlacesList : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        if (checkInternetConnection(requireContext())) {
+            requestPermission()
+        } else {
+            Toast.makeText(context, "Please check your internet connection.", Toast.LENGTH_LONG)
+                .show()
+        }
 
     }
 
@@ -71,8 +86,6 @@ class BurritoPlacesList : Fragment() {
     ): View {
         (activity as AppCompatActivity?)?.supportActionBar?.setDisplayHomeAsUpEnabled(false)
         (activity as? AppCompatActivity)?.supportActionBar?.title = "Burrito Places"
-
-        requestPermission()
 
         binding = FragmentBurritoPlacesListBinding.inflate(inflater, container, false)
         return binding.root
@@ -97,17 +110,23 @@ class BurritoPlacesList : Fragment() {
 
     private fun requestPermission() {
         when {
-            ContextCompat.checkSelfPermission(requireContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED -> {
-                Log.d("Permission", "requestPermission: GRANTED")
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+//                Log.d("Permission", "requestPermission: GRANTED")
                 getCurrentLocation()
             }
 
-            ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), ACCESS_FINE_LOCATION) -> {
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                requireActivity(),
+                ACCESS_FINE_LOCATION
+            ) -> {
                 showLocationPermissionsDialog()
-                Log.d("Permission", "requestPermission: Additional rational should be displayed")
+//                Log.d("Permission", "requestPermission: Additional rational should be displayed")
             }
             else -> {
-                Log.d("Permission", "requestPermission: Permission has not been asked yet")
+//                Log.d("Permission", "requestPermission: Permission has not been asked yet")
                 requestPermissionLauncher.launch(
                     ACCESS_FINE_LOCATION
                 )
@@ -118,44 +137,77 @@ class BurritoPlacesList : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun getCurrentLocation() {
-            fusedLocationProviderClient?.lastLocation?.addOnSuccessListener { location ->
-                if (location != null) {
-                    lastLocation = location
-                    val currentLatLng = LatLng(location.latitude, location.longitude)
-                    Log.d("currentLatLang", " $currentLatLng")
+        fusedLocationProviderClient?.lastLocation?.addOnSuccessListener { location ->
+            if (location != null) {
+                lastLocation = location
+                val currentLatLng = LatLng(location.latitude, location.longitude)
+//                    Log.d("currentLatLang", " $currentLatLng")
 
-                    lifecycleScope.launchWhenResumed {
-                        val response = try {
-                            apolloClient.query(
-                                BurritoPlacesListQuery(
-                                    "burrito",
-                                    currentLatLng.latitude,
-                                    currentLatLng.longitude,
-                                    20000.0
-                                )
-                            ).await()
-                        } catch (e: ApolloException) {
-                            Log.d("Places List", "Failure", e)
-                            null
-                        }
-                        Log.d("Place List", "Success ${response?.data}")
+                lifecycleScope.launchWhenResumed {
+                    val response = try {
+                        apolloClient.query(
+                            BurritoPlacesListQuery(
+                                "burrito",
+                                currentLatLng.latitude,
+                                currentLatLng.longitude,
+                                20000.0
+                            )
+                        ).await()
+                    } catch (e: ApolloException) {
+                        Log.d("Places List", "Failure", e)
+                        return@launchWhenResumed
+                    }
+//                    Log.d("Place List", "Success ${response.data}")
 
-                        val burritoPlaces = response?.data?.search?.business?.filterNotNull()
-                        if (burritoPlaces != null && !response.hasErrors()) {
-                            burritoPlacesAdapter.setPlaces(burritoPlaces)
-                        }
+                    val burritoPlaces = response.data?.search?.business?.filterNotNull()
+                    if (burritoPlaces != null && !response.hasErrors()) {
+                        burritoPlacesAdapter.setPlaces(burritoPlaces)
                     }
                 }
             }
+        }
+    }
+
+
+    private fun checkInternetConnection(context: Context): Boolean {
+        var result = false
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val networkCapabilities = connectivityManager.activeNetwork ?: return false
+            val actNw =
+                connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+            result = when {
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                else -> false
+            }
+        } else {
+            connectivityManager.activeNetworkInfo?.run {
+                result = when (type) {
+                    ConnectivityManager.TYPE_WIFI -> true
+                    ConnectivityManager.TYPE_MOBILE -> true
+                    ConnectivityManager.TYPE_ETHERNET -> true
+                    else -> false
+                }
+
+            }
+        }
+        return result
     }
 
     private fun showLocationPermissionsDialog() {
         AlertDialog.Builder(context)
-            .setMessage("To access app you need location permission")
+            .setMessage("To access app location permission required.")
             .setPositiveButton("Settings") { _, _ ->
-                startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                startActivity(
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.fromParts("package", context?.packageName, null)
+                    )
+                )
             }
-            .setNegativeButton("Cancel", null)
             .show()
     }
 }

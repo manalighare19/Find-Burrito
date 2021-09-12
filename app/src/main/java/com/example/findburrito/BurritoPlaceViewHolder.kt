@@ -9,12 +9,14 @@ class BurritoPlaceViewHolder(private val binding: ItemPlaceBinding) :
 
     fun bind(burritoPlaces: BurritoPlacesListQuery.Business) {
         binding.placeName.text = burritoPlaces.name
+
         if (burritoPlaces.location != null) {
             binding.placeAddress.text = burritoPlaces.location.formatted_address
         }
-        binding.placePrice.text = burritoPlaces.price
 
-        val phone = burritoPlaces.display_phone
+        binding.placePrice.text = burritoPlaces.price ?: "-- "
+
+        val phone = burritoPlaces.display_phone ?: "-- "
         binding.placePhone.text = itemView.context.getString(R.string.bullet_format, phone)
     }
 }
