@@ -9,14 +9,24 @@
         android:id="@+id/burritoPlacesList"
         android:name="com.example.findburrito.BurritoPlacesList"
         android:label="fragment_burrito_places_list"
-        tools:layout="@layout/fragment_burrito_places_list" >
+        tools:layout="@layout/fragment_burrito_places_list">
+
         <action
             android:id="@+id/action_burritoPlacesList_to_burritoPlaceDetailsFragment"
             app:destination="@id/burritoPlaceDetailsFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/burritoPlaceDetailsFragment"
         android:name="com.example.findburrito.BurritoPlaceDetailsFragment"
         android:label="fragment_burrito_place_details"
-        tools:layout="@layout/fragment_burrito_place_details" />
+        tools:layout="@layout/fragment_burrito_place_details">
+
+        <argument
+            android:name="placeId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true"/>
+    </fragment>
+
 </navigation>
