@@ -94,7 +94,7 @@ class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
                     .title(burritoPlaceDetails?.name)
             )
 
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 20f))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 15f))
         }
     }
 }
