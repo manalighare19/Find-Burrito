@@ -80,8 +80,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginLeft="4dp"
+                android:autoLink="phone"
+                android:textColorLink="@color/white"
                 android:maxLines="1"
-                android:textColor="@color/white"
                 android:textSize="15sp"
                 android:textStyle="normal"
                 tools:text="Burrito Place Phone" />
