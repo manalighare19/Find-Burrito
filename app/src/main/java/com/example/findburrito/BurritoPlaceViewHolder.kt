@@ -16,7 +16,8 @@ class BurritoPlaceViewHolder(private val binding: ItemPlaceBinding) :
 
         binding.placePrice.text = burritoPlaces.price ?: "-- "
 
-        val phone = burritoPlaces.display_phone ?: "-- "
+        val phone = if (burritoPlaces.display_phone?.isEmpty() == true)  "-- " else burritoPlaces.display_phone
+
         binding.placePhone.text = itemView.context.getString(R.string.bullet_format, phone)
     }
 }

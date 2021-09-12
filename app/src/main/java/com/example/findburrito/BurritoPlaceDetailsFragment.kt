@@ -78,8 +78,10 @@ class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
             if (burritoPlaceDetails != null && !response.hasErrors()) {
                 binding.placeAddress.text = burritoPlaceDetails.location?.formatted_address
                 binding.placePrice.text = burritoPlaceDetails.price ?: "-- "
+                val phone =
+                    if (burritoPlaceDetails.display_phone?.isEmpty() == true) "-- " else burritoPlaceDetails.display_phone
                 binding.placePhone.text =
-                    getString(R.string.bullet_format, burritoPlaceDetails.display_phone)
+                    getString(R.string.bullet_format, phone)
                 lat = burritoPlaceDetails.coordinates?.latitude!!
                 long = burritoPlaceDetails.coordinates.longitude!!
 
