@@ -1,5 +1,5 @@
-query BurritoPlacesList{
-  search(term: "burrito", latitude: 40.7226553, longitude: -74.0361504, radius: 19312) {
+query BurritoPlacesList($term: String!, $latitude: Float!, $longitude: Float!, $radius: Float!){
+  search(term: $term, latitude: $latitude, longitude: $longitude, radius: $radius) {
     business {
       id
       name
