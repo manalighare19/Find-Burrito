@@ -71,8 +71,7 @@ class BurritoPlacesList : Fragment() {
 
     override fun onStart() {
         super.onStart()
-       requestPermission()
-
+        requestPermission()
     }
 
     override fun onCreateView(
@@ -165,7 +164,7 @@ class BurritoPlacesList : Fragment() {
 
     private fun showLocationPermissionsDialog() {
         AlertDialog.Builder(context)
-            .setMessage("To access app location permission required.")
+            .setMessage("To search best burrito places near you please allow access to your location.")
             .setPositiveButton("Settings") { _, _ ->
                 startActivity(
                     Intent(
