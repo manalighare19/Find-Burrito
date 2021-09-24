@@ -27,6 +27,12 @@
             android:defaultValue="@null"
             app:argType="string"
             app:nullable="true"/>
+
+        <argument
+            android:name="place"
+            android:defaultValue="@null"
+            app:argType="com.example.findburrito.Place"
+            app:nullable="true"/>
     </fragment>
 
 </navigation>

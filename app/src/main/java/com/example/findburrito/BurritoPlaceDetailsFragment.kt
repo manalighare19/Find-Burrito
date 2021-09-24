@@ -1,13 +1,15 @@
 package com.example.findburrito
 
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.transition.TransitionInflater
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.apollographql.apollo.coroutines.await
@@ -33,6 +35,10 @@ class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(android.R.transition.move)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -61,6 +67,18 @@ class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        ViewCompat.setTransitionName(binding.constraintLayout, "detail")
+
+        (activity as? AppCompatActivity)?.supportActionBar?.title = args.place?.name
+
+        binding.placeAddress.text = args.place?.location
+
+        val phone =
+            if (args.place?.display_phone?.isEmpty() == true) "-- " else args.place?.display_phone
+        binding.placePhone.text = getString(R.string.bullet_format, phone)
+
+        binding.placePrice.text = args.place?.price ?: "-- "
+
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -69,24 +87,23 @@ class BurritoPlaceDetailsFragment : Fragment(), OnMapReadyCallback {
             val response = try {
                 apolloClient.query(BurritoPlaceDetailsQuery(args.placeId!!)).await()
             } catch (e: ApolloException) {
-                Log.d("Details List Error", "Failure", e)
                 return@launchWhenResumed
             }
 
             val burritoPlaceDetails = response.data?.business
 
             if (burritoPlaceDetails != null && !response.hasErrors()) {
-                binding.placeAddress.text = burritoPlaceDetails.location?.formatted_address
-                binding.placePrice.text = burritoPlaceDetails.price ?: "-- "
-                val phone =
-                    if (burritoPlaceDetails.display_phone?.isEmpty() == true) "-- " else burritoPlaceDetails.display_phone
-                binding.placePhone.text =
-                    getString(R.string.bullet_format, phone)
+//                binding.placeAddress.text = burritoPlaceDetails.location?.formatted_address
+//                binding.placePrice.text = burritoPlaceDetails.price ?: "-- "
+//                val phone =
+//                    if (burritoPlaceDetails.display_phone?.isEmpty() == true) "-- " else burritoPlaceDetails.display_phone
+//                binding.placePhone.text =
+//                    getString(R.string.bullet_format, phone)
                 lat = burritoPlaceDetails.coordinates?.latitude!!
                 long = burritoPlaceDetails.coordinates.longitude!!
 
             }
-            (activity as? AppCompatActivity)?.supportActionBar?.title = burritoPlaceDetails?.name
+//            (activity as? AppCompatActivity)?.supportActionBar?.title = burritoPlaceDetails?.name
 
 //            Log.d("LatLong", "$lat, $long")
             val place = LatLng(lat, long)

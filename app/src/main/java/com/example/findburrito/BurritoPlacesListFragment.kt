@@ -18,7 +18,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.FragmentNavigator
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.apollographql.apollo.coroutines.await
@@ -49,10 +51,10 @@ class BurritoPlacesList : Fragment() {
     private var fusedLocationProviderClient: FusedLocationProviderClient? = null
 
     private lateinit var binding: FragmentBurritoPlacesListBinding
-    private val burritoPlacesAdapter =
-        BurritoPlacesListAdapter { burritoPlaceDetails: BurritoPlacesListQuery.Business ->
-            openDetailedView(burritoPlaceDetails)
-        }
+
+    private val burritoPlacesAdapter = BurritoPlacesListAdapter{ burritoPlaceDetails: BurritoPlacesListQuery.Business, place: View ->
+        openDetailedView(burritoPlaceDetails, place)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,11 +88,27 @@ class BurritoPlacesList : Fragment() {
         }
     }
 
-    private fun openDetailedView(burritoPlaceDetails: BurritoPlacesListQuery.Business) {
+    private fun openDetailedView(burritoPlaceDetails: BurritoPlacesListQuery.Business, place: View) {
+
+        val placeDetails = burritoPlaceDetails.let {
+            Place(
+                id = it.id,
+                name = it.name,
+                price = it.price,
+                display_phone = it.display_phone,
+                location = it.location?.formatted_address
+            )
+        }
+
+        val extras = FragmentNavigator.Extras.Builder()
+            .addSharedElement( place, "detail")
+            .build()
+
         findNavController().navigate(
             BurritoPlacesListDirections.actionBurritoPlacesListToBurritoPlaceDetailsFragment(
-                placeId = burritoPlaceDetails.id
-            )
+                placeId = burritoPlaceDetails.id,
+                place = placeDetails
+            ), extras
         )
     }
 

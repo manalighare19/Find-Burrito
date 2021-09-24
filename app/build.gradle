@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-parcelize'
     id("com.apollographql.apollo").version("2.5.5")
     id 'androidx.navigation.safeargs.kotlin'
 }
